@@ -58,9 +58,14 @@ Execution
 	``timestamp``; default value: ``timestamp``)
 
 *keep_inputs*
-    Ensures that all inputs that are created in the nodes working directory are
-    kept after node execution (possible values: ``true`` and ``false``; default
-    value: ``false``)
+	Ensures that all inputs that are created in the nodes working directory are
+	kept after node execution (possible values: ``true`` and ``false``; default
+	value: ``false``)
+
+*keep_previous_files_on_rerun*
+	Ensures that working documents from a previous run are kept in the working
+	directory for the current node execution (possible values: ``true`` and
+	``false``; default value: ``false``)
 
 *single_thread_matlab*
 	Should all of the Matlab interfaces (including SPM) use only one thread?

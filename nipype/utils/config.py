@@ -48,6 +48,7 @@ display_variable = :1
 hash_method = timestamp
 job_finished_timeout = 5
 keep_inputs = false
+keep_previous_files_on_rerun = false
 local_hash_check = true
 matplotlib_backend = Agg
 plugin = Linear
