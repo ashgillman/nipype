@@ -5,6 +5,7 @@ from __future__ import print_function, unicode_literals
 from builtins import str, zip, range, open
 from future import standard_library
 import os
+import copy
 import simplejson
 import glob
 import shutil
@@ -32,6 +33,12 @@ try:
     from botocore.utils import fix_s3_host
 except ImportError:
     noboto3 = True
+
+try:
+    import paramiko
+    no_paramiko = False
+except ImportError:
+    no_paramiko = True
 
 # Check for fakes3
 standard_library.install_aliases()
@@ -432,5 +439,48 @@ def test_jsonsink(tmpdir, inputs_attributes):
 
     assert data == expected_data
 
+@pytest.mark.skipif(no_paramiko, reason="paramiko library is not available")
+def test_SSHDataGrabber(tmpdir):
+    """Test SSHDataGrabber by connecting to localhost and collecting some data.
+    """
+    old_cwd = tmpdir.chdir()
 
+    source_dir = tmpdir.mkdir('source')
+    source_hdr = source_dir.join('somedata.hdr')
+    source_dat = source_dir.join('somedata.img')
+    source_hdr.ensure() # create
+    source_dat.ensure() # create
 
+    # ssh client that connects to localhost, current user, regardless of
+    # ~/.ssh/config
+    def _mock_get_ssh_client(self):
+        proxy = None
+        client = paramiko.SSHClient()
+        client.load_system_host_keys()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect('localhost', username=os.getenv('USER'), sock=proxy)
+        return client
+    MockSSHDataGrabber = copy.copy(nio.SSHDataGrabber)
+    MockSSHDataGrabber._get_ssh_client = _mock_get_ssh_client
+
+    # grabber to get files from source_dir matching test.hdr
+    ssh_grabber = MockSSHDataGrabber(infields=['test'],
+                                     outfields=['test_file'])
+    ssh_grabber.inputs.base_directory = str(source_dir)
+    ssh_grabber.inputs.hostname = 'localhost'
+    ssh_grabber.inputs.field_template = dict(test_file='%s.hdr')
+    ssh_grabber.inputs.template = ''
+    ssh_grabber.inputs.template_args = dict(test_file=[['test']])
+    ssh_grabber.inputs.test = 'somedata'
+    ssh_grabber.inputs.sort_filelist = True
+
+    runtime = ssh_grabber.run()
+
+    # did we successfully get the header?
+    assert runtime.outputs.test_file == str(tmpdir.join(source_hdr.basename))
+    # did we successfully get the data?
+    assert (tmpdir.join(source_hdr.basename) # header file
+            .new(ext='.img') # data file
+            .check(file=True, exists=True)) # exists?
+
+    old_cwd.chdir()
