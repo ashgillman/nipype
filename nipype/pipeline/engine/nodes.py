@@ -333,11 +333,14 @@ class Node(EngineBase):
                                           hashvalue)
             if op.exists(hashfile):
                 os.remove(hashfile)
+
+            keep_outdir = str2bool(self.config['execution']['keep_previous_files_on_rerun'])
             rm_outdir = (op.exists(outdir) and not
                          (op.exists(hashfile_unfinished) and
                              self._interface.can_resume) and not
                          isinstance(self, MapNode))
-            if rm_outdir:
+
+            if rm_outdir and not keep_outdir:
                 logger.debug("Removing old %s and its contents", outdir)
                 try:
                     rmtree(outdir)
@@ -353,6 +356,10 @@ class Node(EngineBase):
                         raise ex
                     else:
                         raise ex
+
+            elif op.exists(outdir) and keep_outdir:
+                logger.debug("Node is configured to keep previous run's contents at %s.",
+                             outdir)
 
             else:
                 logger.debug(
