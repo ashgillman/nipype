@@ -160,6 +160,7 @@ EXTRA_REQUIRES = {
     'profiler': ['psutil'],
     'duecredit': ['duecredit'],
     'xvfbwrapper': ['xvfbwrapper'],
+    'ssh': ['paramiko'],
     # 'mesh': ['mayavi']  # Enable when it works
 }
 
