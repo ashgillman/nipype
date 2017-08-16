@@ -141,7 +141,8 @@ REQUIRES = [
     'funcsigs',
     'pytest>=%s' % PYTEST_MIN_VERSION,
     'mock',
-    'pydotplus'
+    'pydotplus',
+    'packaging',
 ]
 
 if sys.version_info <= (3, 4):
@@ -159,6 +160,7 @@ EXTRA_REQUIRES = {
     'profiler': ['psutil'],
     'duecredit': ['duecredit'],
     'xvfbwrapper': ['xvfbwrapper'],
+    'ssh': ['paramiko'],
     # 'mesh': ['mayavi']  # Enable when it works
 }
 

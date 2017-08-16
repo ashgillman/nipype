@@ -74,7 +74,7 @@ def copytree(src, dst, use_hardlink=False):
     try:
         os.makedirs(dst)
     except OSError as why:
-        if 'File exists' in why:
+        if 'File exists' in why.strerror:
             pass
         else:
             raise why
@@ -690,7 +690,7 @@ class DataSink(IOBase):
                 try:
                     os.makedirs(outdir)
                 except OSError as inst:
-                    if 'File exists' in inst:
+                    if 'File exists' in inst.strerror:
                         pass
                     else:
                         raise(inst)
@@ -741,7 +741,7 @@ class DataSink(IOBase):
                         try:
                             os.makedirs(path)
                         except OSError as inst:
-                            if 'File exists' in inst:
+                            if 'File exists' in inst.strerror:
                                 pass
                             else:
                                 raise(inst)
@@ -1259,8 +1259,10 @@ class SelectFiles(IOBase):
         infields = []
         for name, template in list(templates.items()):
             for _, field_name, _, _ in string.Formatter().parse(template):
-                if field_name is not None and field_name not in infields:
-                    infields.append(field_name)
+                if field_name is not None:
+                    field_name = re.match("\w+", field_name).group()
+                    if field_name not in infields:
+                        infields.append(field_name)
 
         self._infields = infields
         self._outfields = list(templates)
@@ -2333,7 +2335,7 @@ class SSHDataGrabber(DataGrabber):
 
         if len(outfiles) == 0:
             # no files
-            msg = 'Output key: %s Template: %s returned no files' % (key, template)
+            msg = 'Output template: %s returned no files' % template
             if self.inputs.raise_on_empty:
                 raise IOError(msg)
             else:

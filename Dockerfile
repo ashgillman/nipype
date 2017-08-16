@@ -64,6 +64,7 @@ RUN conda config --add channels conda-forge; sync && \
                      libxslt \
                      traits=4.6.0 \
                      psutil \
+                     paramiko \
                      icu=58.1 && \
     sync;
 
