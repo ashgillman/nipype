@@ -130,7 +130,9 @@ except ImportError:
     can_import_matplotlib = False
     pass
 
-from nipype import config, logging
+import sys
+import logging
+import nipype
 from nipype.utils.filemanip import loadpkl, savepkl
 from socket import gethostname
 from traceback import format_exception
@@ -142,11 +144,20 @@ try:
     if not sys.version_info < (2, 7):
         from collections import OrderedDict
     config_dict=%s
-    config.update_config(config_dict)
+    nipype.config.update_config(config_dict)
     ## Only configure matplotlib if it was successfully imported, matplotlib is an optional component to nipype
     if can_import_matplotlib:
-        config.update_matplotlib()
-    logging.update_logging(config)
+        nipype.config.update_matplotlib()
+
+    # logging
+    nipype.logging.update_logging(nipype.config)
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.DEBUG) # log everything
+    lh = logging.StreamHandler(sys.stderr)
+    lh.setFormatter(logging.Formatter(fmt=nipype.logging.fmt)) # for consistency
+    lh.setLevel(config_dict['logging']['interface_level']) # only actually report what's needed
+    root_logger.addHandler(lh)
+
     traceback=None
     cwd = os.getcwd()
     info = loadpkl(pklfile)
