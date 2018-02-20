@@ -45,7 +45,9 @@ def get_nipype_gitversion():
 if 'dev' in __version__:
     gitversion = get_nipype_gitversion()
     if gitversion:
-        __version__ = __version__.replace('-dev', '-' + gitversion + '.dev')
+        __version__ = (__version__
+                       + ('' if '+' in __version__ else '+')
+                       +  gitversion)
 
 CLASSIFIERS = ['Development Status :: 5 - Production/Stable',
                'Environment :: Console',
